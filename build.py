@@ -16,6 +16,13 @@ def load_words_from_json(file_path):
 
     return words
 
+def write_list_to_csv(words_list, output_file):
+    with open(output_file, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_ALL)
+
+        for word in words_list:
+            writer.writerow([word])
+
 class WordCard:
     def __init__(self, word, type, definition, repetitions = 0, interval = 1, ease_factor = 2, review_counter = 0, is_new = True):
         self.word = word
@@ -43,6 +50,61 @@ class WordCard:
     def is_learned(self, max_repetitions = 5):
         return self.repetitions >= max_repetitions
     
+def show_word_status(word_cards):
+    due_words = []
+
+    for card in word_cards.values():
+        if card.review_counter <= 0 and not card.is_new:
+            due_words.append(card)
+
+    return due_words
+
+def review_session(word_cards, max_repetitions = 5):
+    history = []
+    total_words_reviewed = 0
+
+    while True:
+        for card in word_cards.values():
+            if card.review_counter > 0:
+                card.review_counter -= 1
+
+        due_words = show_word_status(word_cards)
+
+        if not due_words:
+            filler_word = None
+
+            for card in word_cards.values():
+                if card.is_new:
+                    filler_word = card
+                    break
+
+            if filler_word:
+                filler_word.is_new = False
+                history.append(filler_word.word)
+                total_words_reviewed += 1
+                continue
+            else:
+                all_learned = True
+
+                for card in word_cards.values():
+                    if not card.is_learned(max_repetitions):
+                        all_learned = False
+                        break
+
+                if all_learned:
+                    print('Congratulations! You have learned all words.')
+                    break
+
+        for card in due_words:
+            print(f'Reviewing: {card.word}')
+            history.append(card.word)
+            card.update_word()
+            total_words_reviewed += 1
+
+    output_file = 'words_history.csv'
+    write_list_to_csv(history, output_file)
+    print(len(history))
+    
 if __name__ == '__main__':
     word_cards = load_words_from_json('sat_words.json')
-    print(word_cards['influence'].type)
+    review_session(word_cards)
