@@ -1,8 +1,8 @@
-import csv
 import json
+import csv
 
-def load_words_from_csv(file_path):
-    with open(file_path, 'r') as f:
+def load_words_from_csv(path):
+    with open(path, 'r') as f:
         reader = csv.reader(f)
 
         words = []
@@ -13,18 +13,19 @@ def load_words_from_csv(file_path):
 
         return words
     
-def load_definitions_from_json(file_path):
-    with open(file_path, 'r') as f:
+def load_definitions_from_json(path):
+    with open(path, 'r') as f:
         definitions = json.load(f)
 
     return definitions
 
-def test_user(words, definitions):
+def test(words, definitions):
     top_score = 0
     encounter_words = set()
 
     for word in words:
-        print(f'\nDefine: {word}')
+        print('\n' + '-' * 10)
+        print(f'\nWord: {word}')
 
         if word not in definitions:
             print('Definition not found for this word. Skipping...')
@@ -32,33 +33,31 @@ def test_user(words, definitions):
         definition = definitions[word]
 
         if word not in encounter_words:
-            print(f'{word} -> {definition}')
+            print('\nNew word...')
+            print(f'\nWord: {word}')
+            print(f'Definition: {definition}')
 
-        user_input = input('Answer: ')
+        user_input = input('\nCould you recall the definition? Be honest! (Y/N): ')
 
-        if user_input.lower() != definition.lower():
-            print('\nGame Over!')
-            print(f'Top Score: {top_score}')
-            print(f'You failed on the word: {word}')
-            print(f'Correct Definition: {definition}')
+        if user_input == 'Y' or user_input == 'y':
+            encounter_words.add(word)
+            top_score += 1
+            print('\nNice!')
+        else:
+            print('\nGame over!')
+            print(f'Top score: {top_score}')
+            print(f'Failed word: {word}')
+            print(f'Correct definition: {definition}')
+
             return
-        
-        encounter_words.add(word)
-        top_score += 1
-
-        print('Correct!')
     
-    print('\nCongratulations! You have completed the game :)')
-    print(f'Top Score: {top_score}')
-
+    print('\nCongratulations! You have completed the game.')
+    print(f'Top score: {top_score}')
 
 if __name__ == '__main__':
-    csv_file_path = 'words_history.csv'
-    json_file_path = 'definitions.json'
+    words = load_words_from_csv('history.csv')
+    definitions = load_definitions_from_json('definitions.json')
 
-    words = load_words_from_csv(csv_file_path)
-    definitions = load_definitions_from_json(json_file_path)
+    print('\nWelcome to the word definition game! The objective of the game is to define as many words as possible.')
 
-    print('Welcome to the word definition game!')
-
-    test_user(words, definitions)
+    test(words, definitions)
