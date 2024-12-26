@@ -5,16 +5,12 @@ def load_words_from_json(file_path):
     with open(file_path, 'r') as f:
         data = json.load(f)
 
-    words = {}
+    result = {}
 
-    for entry in data:
-        word = entry['word']
-        type = entry['type']
-        definition = entry['definition']
+    for word, definition in data.items():
+        result[word] = WordCard(word, definition)
 
-        words[word] = WordCard(word, type, definition)
-
-    return words
+    return result
 
 def write_list_to_csv(words_list, output_file):
     with open(output_file, mode='w', newline='', encoding='utf-8') as file:
@@ -24,9 +20,8 @@ def write_list_to_csv(words_list, output_file):
             writer.writerow([word])
 
 class WordCard:
-    def __init__(self, word, type, definition, repetitions = 0, interval = 1, ease_factor = 2, review_counter = 0, is_new = True):
+    def __init__(self, word, definition, repetitions = 0, interval = 1, ease_factor = 2, review_counter = 0, is_new = True):
         self.word = word
-        self.type = type
         self.definition = definition
         self.repetitions = repetitions
         self.interval = interval
@@ -106,5 +101,5 @@ def review_session(word_cards, max_repetitions = 5):
     print(len(history))
     
 if __name__ == '__main__':
-    word_cards = load_words_from_json('sat_words.json')
+    word_cards = load_words_from_json('definitions.json')
     review_session(word_cards)
